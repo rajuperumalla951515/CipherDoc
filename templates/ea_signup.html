@@ -338,7 +338,12 @@
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-lock me-2 text-primary"></i>Password <span class="text-primary">*</span>
                                 </label>
-                                <input type="password" name="password" class="form-control" required minlength="6" placeholder="Minimum 6 characters">
+                                <div class="password-field-wrapper">
+                                    <input type="password" name="password" class="form-control password-toggle-input" required minlength="6" placeholder="Minimum 6 characters">
+                                    <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)" title="Show password">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
                             </div>
                             
                             <div class="col-12 mt-4">
