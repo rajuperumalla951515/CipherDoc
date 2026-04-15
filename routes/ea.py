@@ -4,6 +4,7 @@ from tinydb import Query
 from datetime import datetime
 import uuid
 import os
+import tempfile
 import re
 from encryption import generate_rsa_key_pair, encrypt_file, encrypt_text, decrypt_text
 
@@ -270,7 +271,7 @@ def download_key(key_id, key_type):
         content = key['public_key']
         filename = f"{key['key_name']}_public.pem"
     
-    temp_path = f"/tmp/{filename}"
+    temp_path = os.path.join(tempfile.gettempdir(), filename)
     with open(temp_path, 'w') as f:
         f.write(content)
     

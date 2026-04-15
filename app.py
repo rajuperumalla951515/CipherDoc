@@ -1,6 +1,7 @@
 import os
 import logging
-from flask import Flask 
+import tempfile
+from flask import Flask, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 from tinydb import TinyDB, Query
 
@@ -10,16 +11,32 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', 'secure-system-key-2024')
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-os.makedirs('data', exist_ok=True)
-os.makedirs('uploads', exist_ok=True)
-os.makedirs('keys', exist_ok=True)
+app_root = os.path.dirname(os.path.abspath(__file__))
+is_vercel = os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_ENV') is not None
 
-db = TinyDB('data/exam_db.json')
+if is_vercel:
+    storage_root = tempfile.gettempdir()
+    data_path = os.path.join(storage_root, 'cipherdoc_exam_db.json')
+    uploads_path = os.path.join(storage_root, 'cipherdoc_uploads')
+    keys_path = os.path.join(storage_root, 'cipherdoc_keys')
+else:
+    data_path = os.path.join(app_root, 'data', 'exam_db.json')
+    uploads_path = os.path.join(app_root, 'uploads')
+    keys_path = os.path.join(app_root, 'keys')
+
+os.makedirs(os.path.dirname(data_path), exist_ok=True)
+os.makedirs(uploads_path, exist_ok=True)
+os.makedirs(keys_path, exist_ok=True)
+
+db = TinyDB(data_path)
 users_table = db.table('users')
 papers_table = db.table('papers')
 keys_table = db.table('keys')
 authorizations_table = db.table('authorizations')
 logs_table = db.table('access_logs')
+
+app.config['UPLOAD_FOLDER'] = uploads_path
+app.config['KEYS_FOLDER'] = keys_path
 
 from routes import auth, ea, aef
 app.register_blueprint(auth.bp)
