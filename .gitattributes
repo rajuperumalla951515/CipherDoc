@@ -1,0 +1,10 @@
+# Help GitHub Linguist recognize source languages correctly
+*.py linguist-language=Python
+*.html linguist-language=HTML
+
+# Exclude generated caches from language stats
+__pycache__/** linguist-generated
+*.pyc linguist-generated
+
+# Ignore bundled third-party assets in language breakdown
+static/images/** linguist-vendored
