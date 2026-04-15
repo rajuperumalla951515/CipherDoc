@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}View Paper: {{ paper.exam_name }} - CipherDoc{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <div class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="navbar-brand fw-extrabold" href="{{ url_for('ea.dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+                CipherDoc Admin
+            </a>
+        </div>
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+            <button class="theme-toggle-btn me-2" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                <i class="fas fa-user-circle me-1 text-primary"></i>{{ session.user_name }}
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar py-4">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('ea.dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i><span class="nav-text">Dashboard</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.create_paper') }}">
+                    <i class="fas fa-file-alt"></i><span class="nav-text">Create Paper</span>
+                </a>
+                <a class="nav-link active" href="{{ url_for('ea.manage_papers') }}">
+                    <i class="fas fa-folder-open"></i><span class="nav-text">Manage Papers</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.manage_keys') }}">
+                    <i class="fas fa-key"></i><span class="nav-text">RSA Keys</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.authorize_faculty') }}">
+                    <i class="fas fa-user-check"></i><span class="nav-text">Authorize Faculty</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.access_logs') }}">
+                    <i class="fas fa-history"></i><span class="nav-text">Access Logs</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content-wrapper fade-in">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle primary me-3">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0" style="color: var(--primary-light);">{{ paper.exam_name }}</h2>
+                        <p class="subtitle-text mb-0">Viewing decrypted question paper content</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('ea.manage_papers') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Manage Papers
+                </a>
+            </div>
+            
+            <div class="card p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold"><i class="fas fa-book me-2 text-primary"></i>Subject</h5>
+                        <p>{{ paper.subject }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="fw-bold"><i class="fas fa-calendar me-2 text-primary"></i>Exam Date</h5>
+                        <p>{{ paper.exam_date }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="fw-bold"><i class="fas fa-clock me-2 text-primary"></i>Duration</h5>
+                        <p>{{ paper.exam_duration }} minutes</p>
+                    </div>
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
+                    <div class="col-md-12">
+                        <h5 class="fw-bold"><i class="fas fa-file-alt me-2 text-primary"></i>Instructions</h5>
+                        <div class="paper-content p-3 rounded" style="background: rgba(0,0,0,0.05);">{{ paper.decrypted_instructions|safe }}</div>
+                    </div>
+                    <div class="col-md-12">
+                        <h5 class="fw-bold"><i class="fas fa-question-circle me-2 text-primary"></i>Questions</h5>
+                        <div class="paper-content p-3 rounded" style="background: rgba(0,0,0,0.05);">{{ paper.decrypted_questions|safe }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Secure Exam System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Amazon Ember Display';
+            src: url("{{ url_for('static', filename='fonts/AmazonEmber_Display_He.ttf') }}") format('truetype');
+            font-weight: 900;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --primary: #3A0CA3;
+            --primary-light: #4361EE;
+            --bg-dark: #050505;
+            --bg-card: rgba(18, 18, 18, 0.85);
+            --text-main: #FFFFFF;
+            --text-muted: #BFC6C4;
+            /* Updated color for better project-wide consistency */
+            --accent: #4CC9F0;
+            --border-glow: rgba(58, 12, 163, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --btn-gradient: linear-gradient(135deg, #3A0CA3 0%, #4361EE 100%);
+            --cinematic-gradient: linear-gradient(135deg, #050505 0%, #0A0A1F 100%);
+
+            /* Mesh Gradient Colors */
+            --mesh-1: rgba(255, 95, 109, 0.3);
+            --mesh-2: rgba(0, 201, 255, 0.3);
+            --mesh-3: rgba(58, 12, 163, 0.3);
+            --theme-toggle-bg: rgba(255, 255, 255, 0.05);
+            --text-main-rgb: 255, 255, 255;
+        }
+
+        * {
+            font-family: 'Amazon Ember Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg-dark: #F8FAFC;
+            --bg-card: rgba(255, 255, 255, 0.98);
+            --text-main: #0F172A;
+            --text-main-rgb: 15, 23, 42;
+            --text-muted: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --mesh-1: rgba(255, 95, 109, 0.08);
+            --mesh-2: rgba(0, 201, 255, 0.08);
+            --mesh-3: rgba(58, 12, 163, 0.08);
+            --theme-toggle-bg: rgba(0, 0, 0, 0.04);
+        }
+
+        [data-theme="light"] .text-white,
+        [data-theme="light"] h1,
+        [data-theme="light"] h2,
+        [data-theme="light"] h3,
+        [data-theme="light"] .navbar-brand {
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .text-light,
+        [data-theme="light"] .text-muted,
+        [data-theme="light"] .subtitle-text {
+            color: var(--text-muted) !important;
+            opacity: 1 !important;
+        }
+
+        [data-theme="light"] .card,
+        [data-theme="light"] .stat-card,
+        [data-theme="light"] .step-card,
+        [data-theme="light"] .sidebar {
+            background: var(--bg-card) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        [data-theme="light"] .form-control {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .icon-circle.dark {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        [data-theme="light"] body {
+            background: radial-gradient(circle at top left, rgba(72, 140, 255, 0.24), transparent 28%),
+                        radial-gradient(circle at bottom right, rgba(40, 116, 255, 0.20), transparent 33%),
+                        linear-gradient(135deg, #E3EDF8 0%, #D1E4F4 45%, #B9D6F0 100%);
+            color: var(--text-main);
+        }
+
+        [data-theme="light"] .mesh-bg {
+            background: transparent;
+        }
+
+        * {
+            font-family: 'Lexend', sans-serif;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.7;
+            letter-spacing: 0.3px;
+        }
+
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        .mesh-bg::before,
+        .mesh-bg::after,
+        .mesh-blob {
+            content: '';
+            position: absolute;
+            filter: blur(100px);
+            opacity: 0.6;
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        .mesh-bg::before {
+            width: 50vw;
+            height: 50vw;
+            background: var(--mesh-1);
+            top: -10%;
+            left: -10%;
+        }
+
+        .mesh-bg::after {
+            width: 60vw;
+            height: 60vw;
+            background: var(--mesh-2);
+            bottom: -15%;
+            right: -10%;
+            animation-duration: 25s;
+        }
+
+        .mesh-blob {
+            width: 40vw;
+            height: 40vw;
+            background: var(--mesh-3);
+            top: 40%;
+            left: 30%;
+            animation-duration: 30s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(5%, 5%) scale(1.1);
+            }
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .navbar-brand {
+            font-family: 'Outfit', sans-serif;
+            color: #FFFFFF;
+            letter-spacing: -0.2px;
+        }
+
+        h4,
+        h5,
+        h6 {
+            color: var(--primary-light);
+            text-shadow: 0 0 10px rgba(67, 97, 238, 0.2);
+        }
+
+        .navbar-custom {
+            background: rgba(5, 5, 5, 0.8) !important;
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="light"] .navbar-custom {
+            background: rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--text-main), #4CC9F0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            height: 32px;
+            width: auto;
+            margin-right: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s ease;
+        }
+
+        .drop-shadow {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+        }
+
+        .login-title {
+            color: var(--text-main);
+            text-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        [data-theme="dark"] .login-title {
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .theme-toggle-btn {
+            background: var(--theme-toggle-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.1);
+            background: var(--glass-bg);
+        }
+
+        .navbar-custom .nav-link {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link.active {
+            color: #FFFFFF !important;
+            text-shadow: 0 0 15px rgba(76, 201, 240, 0.6);
+        }
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .icon-circle.primary {
+            background: var(--btn-gradient);
+            color: white;
+            box-shadow: 0 0 20px rgba(58, 12, 163, 0.4);
+        }
+
+        .icon-circle.accent {
+            background: linear-gradient(135deg, #4CC9F0 0%, #4361EE 100%);
+            color: white;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
+        }
+
+        .icon-circle.dark {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 2.5rem !important;
+            position: relative;
+            overflow: hidden;
+            --x: 50%;
+            --y: 50%;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle 150px at var(--x) var(--y), rgba(255, 255, 255, 0.05) 0%, transparent 80%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(0, 0, 0, 0.75);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
+        }
+
+        .quick-action-card {
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .quick-action-card:hover .icon-circle {
+            transform: rotate(15deg) scale(1.1);
+            background: #FFFFFF;
+            color: var(--primary);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+        }
+
+        .quick-action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: skewX(-25deg);
+            transition: 0.7s;
+        }
+
+        .quick-action-card:hover::before {
+            left: 150%;
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .btn-primary {
+            background: var(--btn-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(58, 12, 163, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(58, 12, 163, 0.4);
+            background: var(--btn-gradient);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-light);
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            padding: 10px 26px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: transparent;
+            color: var(--primary-light);
+            border: 2px solid var(--primary-light);
+            box-shadow: 0 4px 15px rgba(58, 12, 163, 0.4);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: #FFFFFF !important;
+            padding: 16px 20px;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+        }
+
+        /* Fix for select dropdown visibility */
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            appearance: none;
+        }
+
+        select.form-control option {
+            background-color: #1A1A1A;
+            color: #FFFFFF;
+            padding: 10px;
+        }
+
+        .form-label {
+            color: var(--text-main);
+            margin-bottom: 12px;
+            letter-spacing: 0.4px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .text-primary {
+            color: #4CC9F0 !important;
+            /* Brighter blue for better visibility on dark */
+        }
+
+        ::placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.6;
+        }
+
+        [data-theme="light"] ::placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.8;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .text-accent {
+            color: var(--accent) !important;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted) !important;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        [data-theme="light"] .form-control::placeholder {
+            opacity: 0.8;
+        }
+
+        .subtitle-text {
+            color: #d1d5db6a;
+            /* Lighter, softer grey-white */
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-top: 5px;
+            margin-bottom: 35px;
+            display: block;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.8px;
+            opacity: 0.9;
+        }
+
+        .form-control:focus {
+            background: rgba(var(--text-main-rgb), 0.05);
+            border-color: var(--primary-light);
+            color: var(--text-main);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border-left: 5px solid #10B981;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171;
+            border-left: 5px solid #EF4444;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            --x: 50%;
+            --y: 50%;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle 120px at var(--x) var(--y), rgba(255, 255, 255, 0.03) 0%, transparent 80%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        [data-theme="dark"] .stat-card h3 {
+            background: linear-gradient(to bottom, #FFF, #ADB5BD);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            min-height: calc(100vh - 76px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 260px;
+            position: sticky;
+            top: 76px;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .main-content-wrapper {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            width: calc(100% - 260px);
+            padding: 30px;
+            min-height: calc(100vh - 76px);
+        }
+
+        .sidebar.collapsed + .main-content-wrapper {
+            width: calc(100% - 80px);
+        }
+
+        .sidebar .nav-text {
+            transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease;
+            white-space: nowrap;
+            display: inline-block;
+            opacity: 1;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            margin: 0;
+            pointer-events: none;
+            overflow: hidden;
+            transform: translateX(-10px);
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-muted);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin: 4px 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .sidebar .nav-link i {
+            width: 40px;
+            height: 40px;
+            font-size: 1.15rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed .nav-link i {
+            margin: 0 !important;
+            font-size: 1.35rem;
+        }
+
+        .sidebar .nav-link:hover {
+            color: var(--text-main);
+            background: var(--glass-bg);
+        }
+
+        .sidebar .nav-link:hover i {
+            transform: scale(1.15);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-light);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .nav-link.active i {
+            color: var(--primary-light);
+        }
+
+        .sidebar .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            height: 60%;
+            width: 4px;
+            background: var(--primary-light);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 20px;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .table {
+            background: transparent !important;
+            color: var(--text-main) !important;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .table thead th {
+            color: var(--primary-light) !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 20px !important;
+        }
+
+        .table tbody tr {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            transition: all 0.3s ease;
+        }
+
+        .table tbody td {
+            color: var(--text-main) !important;
+            padding: 16px 20px !important;
+            vertical-align: middle;
+            background: transparent !important;
+            opacity: 0.9;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        .mono-text {
+            background: rgba(0, 0, 0, 0.3);
+            color: #4CC9F0;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+
+        .encryption-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .encryption-badge.locked {
+            background: var(--btn-gradient);
+            color: white;
+        }
+
+        .encryption-badge.unlocked {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+
+        .badge-encrypted {
+            background: rgba(191, 198, 196, 0.1);
+            color: #BFC6C4 !important;
+            border: 1px solid rgba(191, 198, 196, 0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-active {
+            background: rgba(76, 201, 240, 0.1);
+            color: #4CC9F0 !important;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        /* Glassmorphism Profile Modal */
+        .glass-modal .modal-content {
+            background: rgba(18, 18, 18, 0.75);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+            border-radius: 24px;
+            color: white;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .glass-modal .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1.5rem 2rem;
+        }
+
+        .glass-modal .modal-body {
+            padding: 2rem;
+        }
+
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.2rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .profile-avatar-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 30px;
+            background: var(--btn-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 30px rgba(58, 12, 163, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar-large::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            background: radial-gradient(circle, rgba(76, 201, 240, 0.2) 0%, transparent 70%);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        /* Realistic Animations */
+        @keyframes modalSpring {
+            0% { transform: scale(0.9) translateY(30px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .glass-modal.show .modal-content {
+            animation: modalSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .profile-info-grid > div {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .glass-modal.show .profile-info-grid > div {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .glass-modal.show .profile-info-grid > div:nth-child(1) { animation-delay: 0.1s; }
+        .glass-modal.show .profile-info-grid > div:nth-child(2) { animation-delay: 0.15s; }
+        .glass-modal.show .profile-info-grid > div:nth-child(3) { animation-delay: 0.2s; }
+        .glass-modal.show .profile-info-grid > div:nth-child(4) { animation-delay: 0.25s; }
+        .glass-modal.show .profile-info-grid > div:nth-child(5) { animation-delay: 0.3s; }
+        .glass-modal.show .profile-info-grid > div:nth-child(6) { animation-delay: 0.35s; }
+
+        .edit-profile-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            padding: 4px 8px;
+            width: 100%;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .edit-profile-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
+        }
+
+        .edit-mode .view-item { display: none; }
+        .view-mode .edit-item { display: none; }
+
+        .edit-toggle-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .edit-toggle-btn:hover {
+            background: var(--btn-gradient);
+            border-color: transparent;
+            transform: scale(1.1);
+        }
+
+        hr {
+            border-color: rgba(255, 255, 255, 0.08);
+            opacity: 1;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        ::selection {
+            background: rgba(67, 97, 238, 0.35);
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mesh-bg">
+        <div class="mesh-blob"></div>
+    </div>
+    {% block navbar %}{% endblock %}
+
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-8">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+                    role="alert">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+
+    {% if current_user %}
+    <!-- Profile Modal -->
+    <div class="modal fade glass-modal" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content overflow-hidden">
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <!-- Left Sidebar: Avatar & Role -->
+                        <div class="col-md-4 profile-avatar-wrapper">
+                            <div class="profile-avatar-large">
+                                <i class="fas fa-{{ 'shield-alt' if current_user.user_type == 'EA' else 'user' }}"></i>
+                            </div>
+                            <h4 class="fw-bold mb-1 text-center" style="color: var(--primary-light);">{{ current_user.full_name }}</h4>
+                            <span class="badge-{{ 'active' if current_user.user_type == 'EA' else 'encrypted' }} mb-3">
+                                {{ 'Administrator' if current_user.user_type == 'EA' else 'Faculty' }}
+                            </span>
+                        </div>
+                        
+                        <!-- Right Side: Details -->
+                        <div class="col-md-8 p-4 px-5 d-flex flex-column h-100 view-mode" id="profileContent">
+                            <form id="profileUpdateForm">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h5 class="fw-bold mb-0">
+                                            <i class="fas fa-id-card me-2 text-primary"></i>Account Information
+                                        </h5>
+                                        <div class="edit-toggle-btn view-item" onclick="toggleProfileEdit()">
+                                            <i class="fas fa-pen-nib"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-grid">
+                                        <div>
+                                            <p class="info-label">Full Name</p>
+                                            <p class="info-value view-item">{{ current_user.full_name }}</p>
+                                            <input type="text" name="full_name" class="edit-profile-input edit-item" value="{{ current_user.full_name }}">
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Email Address</p>
+                                            <p class="info-value view-item">{{ current_user.email }}</p>
+                                            <input type="email" name="email" class="edit-profile-input edit-item" value="{{ current_user.email }}">
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Department</p>
+                                            <p class="info-value view-item">{{ current_user.department }}</p>
+                                            <input type="text" name="department" class="edit-profile-input edit-item" value="{{ current_user.department }}">
+                                        </div>
+                                        
+                                        {% if current_user.user_type == 'EA' %}
+                                        <div>
+                                            <p class="info-label">Admin ID</p>
+                                            <p class="info-value text-secondary small">{{ current_user.employee_id }} (Fixed)</p>
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Designation</p>
+                                            <p class="info-value view-item">{{ current_user.designation }}</p>
+                                            <input type="text" name="designation" class="edit-profile-input edit-item" value="{{ current_user.designation }}">
+                                        </div>
+                                        <div class="col-span-2">
+                                            <p class="info-label">Office Location</p>
+                                            <p class="info-value view-item">{{ current_user.office_location }}</p>
+                                            <input type="text" name="office_location" class="edit-profile-input edit-item" value="{{ current_user.office_location }}">
+                                        </div>
+                                        {% else %}
+                                        <div>
+                                            <p class="info-label">Faculty ID</p>
+                                            <p class="info-value text-secondary small">{{ current_user.faculty_id }} (Fixed)</p>
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Subject Expertise</p>
+                                            <p class="info-value view-item">{{ current_user.subject_expertise }}</p>
+                                            <input type="text" name="subject_expertise" class="edit-profile-input edit-item" value="{{ current_user.subject_expertise }}">
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Qualification</p>
+                                            <p class="info-value view-item">{{ current_user.qualification }}</p>
+                                            <input type="text" name="qualification" class="edit-profile-input edit-item" value="{{ current_user.qualification }}">
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Experience</p>
+                                            <p class="info-value view-item">{{ current_user.experience_years }} Years</p>
+                                            <input type="number" name="experience_years" class="edit-profile-input edit-item" value="{{ current_user.experience_years }}">
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div>
+                                            <p class="info-label">Contact Number</p>
+                                            <p class="info-value view-item">{{ current_user.contact_number }}</p>
+                                            <input type="text" name="contact_number" class="edit-profile-input edit-item" value="{{ current_user.contact_number }}">
+                                        </div>
+                                        <div>
+                                            <p class="info-label">Account Joined</p>
+                                            <p class="info-value small text-secondary">{{ current_user.created_at.split(' ')[0] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bottom Right Actions -->
+                                <div class="text-end mt-4 pt-3">
+                                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-4 py-2 me-2 edit-item" onclick="toggleProfileEdit()">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 py-2 edit-item">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-4 py-2 view-item" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-2"></i>Close
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Management
+        const themeToggle = {
+            init() {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                this.updateIcons(savedTheme);
+                this.updateLogo(savedTheme);
+            },
+            toggle() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                this.updateIcons(newTheme);
+                this.updateLogo(newTheme);
+            },
+            updateIcons(theme) {
+                const icons = document.querySelectorAll('.theme-icon');
+                icons.forEach(icon => {
+                    icon.className = theme === 'dark' ? 'fas fa-sun theme-icon' : 'fas fa-moon theme-icon';
+                });
+            },
+            updateLogo(theme) {
+                const logos = document.querySelectorAll('.navbar-logo, .logo-container img');
+                logos.forEach(logo => {
+                    logo.src = theme === 'dark' ? "{{ url_for('static', filename='images/logo_2.png') }}" : "{{ url_for('static', filename='images/logo.png') }}";
+                });
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            themeToggle.init();
+            
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed && document.querySelector('.sidebar')) {
+                document.querySelector('.sidebar').classList.add('collapsed');
+            }
+        });
+
+        document.querySelectorAll('.card, .stat-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                card.style.setProperty('--x', `${x}%`);
+                card.style.setProperty('--y', `${y}%`);
+            });
+        });
+
+        function toggleTheme() {
+            themeToggle.toggle();
+        }
+
+        function toggleProfileEdit() {
+            const container = document.getElementById('profileContent');
+            container.classList.toggle('view-mode');
+            container.classList.toggle('edit-mode');
+        }
+
+        document.getElementById('profileUpdateForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const saveBtn = this.querySelector('button[type="submit"]');
+            const originalHtml = saveBtn.innerHTML;
+            
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const response = await fetch('/update-profile', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    location.reload(); // Simple reload to update all session items and navbar
+                } else {
+                    alert(result.message || 'Update failed');
+                }
+            } catch (err) {
+                alert('An error occurred');
+            } finally {
+                saveBtn.innerHTML = originalHtml;
+                saveBtn.disabled = false;
+            }
+        });
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content-wrapper');
+            sidebar.classList.toggle('collapsed');
+            
+            // Save preference to localStorage
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        // Initialize sidebar state
+        document.addEventListener('DOMContentLoaded', () => {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.querySelector('.sidebar').classList.add('collapsed');
+            }
+        });
+
+        // Ask confirmation before logout on all pages.
+        document.addEventListener('click', (event) => {
+            const logoutLink = event.target.closest('a[href*="/logout"]');
+            if (!logoutLink) {
+                return;
+            }
+
+            const confirmed = confirm('Are you sure you want to logout?');
+            if (!confirmed) {
+                event.preventDefault();
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

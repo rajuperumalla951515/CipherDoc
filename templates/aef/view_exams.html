@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}View Exams - CipherDoc{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <div class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="navbar-brand fw-extrabold" href="{{ url_for('aef.dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+                CipherDoc Faculty
+            </a>
+        </div>
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+            <button class="theme-toggle-btn me-2" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                <i class="fas fa-user-circle me-1 text-primary"></i>{{ session.user_name }}
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar py-4">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('aef.dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i><span class="nav-text">Dashboard</span>
+                </a>
+                <a class="nav-link active" href="{{ url_for('aef.view_exams') }}">
+                    <i class="fas fa-eye"></i><span class="nav-text">View Exams</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content-wrapper fade-in">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-circle accent me-3">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0" style="color: var(--primary-light);">Authorized Exams</h2>
+                    <p class="subtitle-text mb-0">View all exam papers you're authorized to access</p>
+                </div>
+            </div>
+            
+            {% if papers %}
+            <div class="row g-4">
+                {% for paper in papers %}
+                <div class="col-lg-6">
+                    <div class="card p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="icon-circle primary me-3">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-1" style="color: var(--primary-light);">{{ paper.exam_name }}</h5>
+                                        <p class="text-muted mb-1">{{ paper.subject }}</p>
+                                    </div>
+                                    <span class="encryption-badge locked">
+                                        <i class="fas fa-lock"></i>Encrypted
+                                    </span>
+                                </div>
+                                
+                                <div class="row g-2 mb-3">
+                                    <div class="col-auto">
+                                        <span class="small text-muted">
+                                            <i class="fas fa-calendar me-1 text-primary"></i>{{ paper.exam_date }}
+                                        </span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span class="small text-muted">
+                                            <i class="fas fa-clock me-1 text-warning"></i>{{ paper.exam_duration }} min
+                                        </span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span class="small text-muted">
+                                            <i class="fas fa-star me-1 text-info"></i>{{ paper.total_marks }} marks
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('aef.decrypt_paper', paper_id=paper.id) }}" class="btn btn-primary">
+                                        <i class="fas fa-unlock me-2"></i>Decrypt Paper
+                                    </a>
+                                    <a href="{{ url_for('aef.download_paper', paper_id=paper.id) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-download me-2"></i>Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card p-5 text-center">
+                <div class="icon-circle dark mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h5 class="fw-bold" style="color: var(--primary-light);">No Authorized Exams</h5>
+                <p class="text-muted">You don't have any authorized exam papers yet. Please contact your administrator.</p>
+                <a href="{{ url_for('aef.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

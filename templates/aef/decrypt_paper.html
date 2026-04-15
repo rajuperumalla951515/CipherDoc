@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Decrypt Paper - CipherDoc{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <div class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="navbar-brand fw-extrabold" href="{{ url_for('aef.dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+                CipherDoc Faculty
+            </a>
+        </div>
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+            <button class="theme-toggle-btn me-2" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                <i class="fas fa-user-circle me-1 text-primary"></i>{{ session.user_name }}
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar py-4">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('aef.dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i><span class="nav-text">Dashboard</span>
+                </a>
+                <a class="nav-link active" href="{{ url_for('aef.view_exams') }}">
+                    <i class="fas fa-eye"></i><span class="nav-text">View Exams</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content-wrapper fade-in">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-circle {% if decrypted_data %}accent{% else %}primary{% endif %} me-3">
+                    <i class="fas fa-{% if decrypted_data %}unlock{% else %}lock{% endif %}"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0" style="color: var(--primary-light);">{{ paper.exam_name }}</h2>
+                    <p class="subtitle-text mb-0">{{ paper.subject }}</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Exam Details
+                        </h5>
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Exam Name</span>
+                            <span class="fw-semibold">{{ paper.exam_name }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Subject</span>
+                            <span class="fw-semibold">{{ paper.subject }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Date</span>
+                            <span class="fw-semibold">
+                                <i class="fas fa-calendar me-1 text-primary"></i>{{ paper.exam_date }}
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Duration</span>
+                            <span class="fw-semibold">
+                                <i class="fas fa-clock me-1 text-warning"></i>{{ paper.exam_duration }} minutes
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Total Marks</span>
+                            <span class="fw-semibold">
+                                <i class="fas fa-star me-1 text-info"></i>{{ paper.total_marks }}
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Status</span>
+                            {% if decrypted_data %}
+                            <span class="encryption-badge unlocked">
+                                <i class="fas fa-unlock"></i>Decrypted
+                            </span>
+                            {% else %}
+                            <span class="encryption-badge locked">
+                                <i class="fas fa-lock"></i>Encrypted
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if not decrypted_data %}
+                        <form method="POST" action="{{ url_for('aef.decrypt_paper', paper_id=paper.id) }}">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-unlock me-2"></i>Decrypt Question Paper
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{{ url_for('aef.download_paper', paper_id=paper.id) }}" class="btn btn-primary w-100">
+                            <i class="fas fa-download me-2"></i>Download Paper
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('aef.view_exams') }}" class="btn btn-outline-primary w-100 mt-2">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Exams
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-8">
+                    {% if decrypted_data %}
+                    <div class="card p-4 mb-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Instructions
+                        </h5>
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.05); border-left: 4px solid var(--primary-light);">
+                            <div class="mb-0">{{ decrypted_data.instructions|safe }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-question-circle me-2 text-primary"></i>Questions
+                        </h5>
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.05); border-left: 4px solid var(--primary-light);">
+                            <div class="mb-0">{{ decrypted_data.questions|safe }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card p-5 text-center">
+                        <div class="icon-circle primary mx-auto mb-3" style="width: 100px; height: 100px; font-size: 40px;">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h4 class="fw-bold" style="color: var(--primary-light);">Content Encrypted</h4>
+                        <p class="text-muted mb-4">
+                            This question paper is secured with RSA-2048 bit encryption.
+                            <br>Click the "Decrypt Question Paper" button to view the content.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <span class="badge-encrypted">
+                                <i class="fas fa-shield-virus me-1"></i>RSA-2048
+                            </span>
+                            <span class="badge-encrypted">
+                                <i class="fas fa-key me-1"></i>Asymmetric
+                            </span>
+                            <span class="badge-encrypted">
+                                <i class="fas fa-lock me-1"></i>Secured
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

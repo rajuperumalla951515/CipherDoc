@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}EA Dashboard - CipherDoc{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <div class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="navbar-brand fw-extrabold" href="{{ url_for('ea.dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+                CipherDoc Admin
+            </a>
+        </div>
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+            <button class="theme-toggle-btn me-2" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                <i class="fas fa-user-circle me-1 text-primary"></i>{{ session.user_name }}
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar py-4">
+            <nav class="nav flex-column">
+                <a class="nav-link active" href="{{ url_for('ea.dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i><span class="nav-text">Dashboard</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.create_paper') }}">
+                    <i class="fas fa-file-alt"></i><span class="nav-text">Create Paper</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.manage_papers') }}">
+                    <i class="fas fa-folder-open"></i><span class="nav-text">Manage Papers</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.manage_keys') }}">
+                    <i class="fas fa-key"></i><span class="nav-text">RSA Keys</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.authorize_faculty') }}">
+                    <i class="fas fa-user-check"></i><span class="nav-text">Authorize Faculty</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.access_logs') }}">
+                    <i class="fas fa-history"></i><span class="nav-text">Access Logs</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content-wrapper fade-in">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-circle primary me-3">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0" style="color: var(--primary-light);">Administrator Dashboard</h2>
+                    <p class="subtitle-text mb-0">Welcome back, {{ session.user_name }}</p>
+                </div>
+            </div>
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle dark me-3">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ stats.total_papers }}</h3>
+                                <p class="text-muted mb-0 small">Total Papers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle accent me-3">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ stats.total_faculty }}</h3>
+                                <p class="text-muted mb-0 small">Total Faculty</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle primary me-3">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ stats.authorized_faculty }}</h3>
+                                <p class="text-muted mb-0 small">Authorized</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle dark me-3">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ stats.total_keys }}</h3>
+                                <p class="text-muted mb-0 small">RSA Keys</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-tasks me-2 text-primary"></i>Quick Actions
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('ea.create_paper') }}" class="text-decoration-none">
+                                    <div class="card p-3 h-100 quick-action-card">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-circle primary me-3" style="width: 50px; height: 50px; font-size: 18px;">
+                                                <i class="fas fa-plus"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-1" style="color: var(--primary-light);">Create New Paper</h6>
+                                                <p class="text-muted mb-0 small">Create and encrypt question paper</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('ea.manage_keys') }}" class="text-decoration-none">
+                                    <div class="card p-3 h-100 quick-action-card">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-circle dark me-3" style="width: 50px; height: 50px; font-size: 18px;">
+                                                <i class="fas fa-key"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-1" style="color: var(--primary-light);">Generate RSA Keys</h6>
+                                                <p class="text-muted mb-0 small">Create new encryption keys</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('ea.authorize_faculty') }}" class="text-decoration-none">
+                                    <div class="card p-3 h-100 quick-action-card">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-circle accent me-3" style="width: 50px; height: 50px; font-size: 18px;">
+                                                <i class="fas fa-user-plus"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-1" style="color: var(--primary-light);">Authorize Faculty</h6>
+                                                <p class="text-muted mb-0 small">Grant exam access to faculty</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('ea.access_logs') }}" class="text-decoration-none">
+                                    <div class="card p-3 h-100 quick-action-card">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-circle primary me-3" style="width: 50px; height: 50px; font-size: 18px;">
+                                                <i class="fas fa-history"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-1" style="color: var(--primary-light);">View Access Logs</h6>
+                                                <p class="text-muted mb-0 small">Monitor system activity</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card p-4 h-100">
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-clock me-2 text-primary"></i>Recent Activity
+                        </h5>
+                        {% if stats.recent_logs %}
+                            {% for log in stats.recent_logs %}
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom border-white-10 activity-item">
+                                <div class="icon-circle {% if log.action == 'LOGIN' %}accent{% elif log.action == 'CREATE_PAPER' %}primary{% else %}dark{% endif %} me-3" style="width: 36px; height: 36px; font-size: 12px;">
+                                    <i class="fas fa-{% if log.action == 'LOGIN' %}sign-in-alt{% elif log.action == 'CREATE_PAPER' %}file-alt{% elif log.action == 'GENERATE_KEY' %}key{% elif log.action == 'AUTHORIZE_FACULTY' %}user-check{% else %}history{% endif %}"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 small fw-semibold" style="color: var(--primary-light);">{{ log.action }}</p>
+                                    <p class="mb-0 text-muted small" style="opacity: 0.6;">{{ log.timestamp }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center">No recent activity</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

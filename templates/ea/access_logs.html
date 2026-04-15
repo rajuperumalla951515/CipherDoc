@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Logs - CipherDoc{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <div class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="navbar-brand fw-extrabold" href="{{ url_for('ea.dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+                CipherDoc Admin
+            </a>
+        </div>
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+            <button class="theme-toggle-btn me-2" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                <i class="fas fa-user-circle me-1 text-primary"></i>{{ session.user_name }}
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar py-4">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('ea.dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i><span class="nav-text">Dashboard</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.create_paper') }}">
+                    <i class="fas fa-file-alt"></i><span class="nav-text">Create Paper</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.manage_papers') }}">
+                    <i class="fas fa-folder-open"></i><span class="nav-text">Manage Papers</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.manage_keys') }}">
+                    <i class="fas fa-key"></i><span class="nav-text">RSA Keys</span>
+                </a>
+                <a class="nav-link" href="{{ url_for('ea.authorize_faculty') }}">
+                    <i class="fas fa-user-check"></i><span class="nav-text">Authorize Faculty</span>
+                </a>
+                <a class="nav-link active" href="{{ url_for('ea.access_logs') }}">
+                    <i class="fas fa-history"></i><span class="nav-text">Access Logs</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="main-content-wrapper fade-in">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-circle primary me-3">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0" style="color: var(--primary-light);">System Access Logs</h2>
+                    <p class="subtitle-text mb-0">Monitor all system activities and access events</p>
+                </div>
+            </div>
+            
+            <div class="card p-4">
+                {% if logs %}
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table mb-0">
+                        <thead style="position: sticky; top: 0; z-index: 10;">
+                            <tr style="background: #1a1a1a;">
+                                <th style="background: inherit; position: sticky; top: 0;"><i class="fas fa-clock me-1"></i>Timestamp</th>
+                                <th style="background: inherit; position: sticky; top: 0;"><i class="fas fa-user me-1"></i>User</th>
+                                <th style="background: inherit; position: sticky; top: 0;"><i class="fas fa-user-tag me-1"></i>Role</th>
+                                <th style="background: inherit; position: sticky; top: 0;"><i class="fas fa-bolt me-1"></i>Action</th>
+                                <th style="background: inherit; position: sticky; top: 0;"><i class="fas fa-info-circle me-1"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="small">
+                                    <i class="fas fa-clock text-muted me-1"></i>
+                                    {{ log.timestamp }}
+                                </td>
+                                <td class="fw-semibold">{{ log.user_name }}</td>
+                                <td>
+                                    {% if log.user_type == 'EA' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-user-tie me-1"></i>Admin
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-chalkboard-teacher me-1"></i>Faculty
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.action == 'LOGIN' %}
+                                    <span class="text-success"><i class="fas fa-sign-in-alt me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'LOGOUT' %}
+                                    <span class="text-secondary"><i class="fas fa-sign-out-alt me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'CREATE_PAPER' %}
+                                    <span class="text-primary"><i class="fas fa-plus me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'GENERATE_KEY' %}
+                                    <span class="text-warning"><i class="fas fa-key me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'AUTHORIZE_FACULTY' %}
+                                    <span class="text-info"><i class="fas fa-user-check me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'DECRYPT_PAPER' %}
+                                    <span class="text-danger"><i class="fas fa-unlock me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'DOWNLOAD_PAPER' %}
+                                    <span class="text-primary"><i class="fas fa-download me-1"></i>{{ log.action }}</span>
+                                    {% elif log.action == 'SIGNUP' %}
+                                    <span class="text-success"><i class="fas fa-user-plus me-1"></i>{{ log.action }}</span>
+                                    {% else %}
+                                    <span><i class="fas fa-circle me-1"></i>{{ log.action }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-muted" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;" title="{{ log.details }}">
+                                    {{ log.details }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="icon-circle dark mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: var(--primary-light);">No Activity Logs</h5>
+                    <p class="text-muted">System activities will appear here once users start interacting.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="row g-4 mt-3">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle accent me-3" style="width: 45px; height: 45px; font-size: 18px;">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold" style="color: var(--primary-light);">{{ logs|selectattr('action', 'equalto', 'LOGIN')|list|length }}</h5>
+                                <p class="text-muted mb-0 small">Logins</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle dark me-3" style="width: 45px; height: 45px; font-size: 18px;">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold" style="color: var(--primary-light);">{{ logs|selectattr('action', 'equalto', 'CREATE_PAPER')|list|length }}</h5>
+                                <p class="text-muted mb-0 small">Papers Created</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle primary me-3" style="width: 45px; height: 45px; font-size: 18px;">
+                                <i class="fas fa-unlock"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold" style="color: var(--primary-light);">{{ logs|selectattr('action', 'equalto', 'DECRYPT_PAPER')|list|length }}</h5>
+                                <p class="text-muted mb-0 small">Decryptions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle accent me-3" style="width: 45px; height: 45px; font-size: 18px;">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold" style="color: var(--primary-light);">{{ logs|selectattr('action', 'equalto', 'DOWNLOAD_PAPER')|list|length }}</h5>
+                                <p class="text-muted mb-0 small">Downloads</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

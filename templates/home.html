@@ -1,0 +1,849 @@
+{% extends 'base.html' %}
+
+{% block title %}Secure Exam Distribution System{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+        <a class="navbar-brand fw-extrabold" href="{{ url_for('auth.home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+            CipherDoc
+        </a>
+        <div class="navbar-nav ms-auto">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center fade-in">
+            <div class="mb-4">
+                <div class="logo-container mx-auto mb-4" style="width: 120px; height: 120px;">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Ciper Doc" class="img-fluid drop-shadow">
+                </div>
+            </div>
+            <h1 class="display-3 fw-extrabold mb-3 hero-title">
+                Encrypted Examination System
+            </h1>
+            <p class="lead mb-4 text-light opacity-75 fw-medium">
+                <i class="fas fa-key me-2 text-primary"></i>RSA Public Key Encryption
+                <span class="mx-3 opacity-25">|</span>
+                <i class="fas fa-database me-2 text-info"></i>TinyDB Storage
+                <span class="mx-3 opacity-25">|</span>
+                <i class="fas fa-user-shield me-2 text-success"></i>Access Control
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <span class="badge rounded-pill px-3 py-2" style="background: rgba(67, 97, 238, 0.1); color: #4361EE; border: 1px solid rgba(67, 97, 238, 0.2);">
+                    <i class="fas fa-shield-virus me-1"></i> 2048-bit RSA
+                </span>
+                <span class="badge rounded-pill px-3 py-2" style="background: rgba(76, 201, 240, 0.1); color: #4CC9F0; border: 1px solid rgba(76, 201, 240, 0.2);">
+                    <i class="fas fa-sync-alt me-1"></i> Synchronized
+                </span>
+                <span class="badge rounded-pill px-3 py-2" style="background: rgba(123, 47, 190, 0.15); color: #B47FFF; border: 1px solid rgba(123, 47, 190, 0.25);">
+                    <i class="fas fa-file-contract me-1"></i> Secure Papers
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-12 d-flex justify-content-center">
+            <div class="auth-card-wrapper shadow-lg">
+                <!-- Mode Toggle Icon -->
+                <div class="mode-toggle-icon" id="mode-toggle-trigger" onclick="toggleAuthMode()">
+                    <i class="fas fa-chalkboard-teacher" id="switcher-icon"></i>
+                    <span class="toggle-tooltip" id="toggle-text">Faculty Portal</span>
+                </div>
+
+                <div class="auth-slider" id="auth-slider">
+                    <!-- Admin Slide -->
+                    <div class="auth-slide p-5">
+                        <div class="text-center mb-5 pt-4">
+                            <div class="icon-circle dark mx-auto mb-4" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h2 class="fw-bold text-white mb-3">Examination Administrator</h2>
+                            <p class="lead text-light opacity-50 px-5">Manage internal RSA keys, encrypt examination papers, and monitor system access logs in real-time.</p>
+                        </div>
+                        
+                        <div class="stats-grid mb-4">
+                            <div class="stat-item"><i class="fas fa-file-alt text-primary me-2"></i>Create Papers</div>
+                            <div class="stat-item"><i class="fas fa-key text-info me-2"></i>Manage Keys</div>
+                            <div class="stat-item"><i class="fas fa-users text-accent me-2"></i>Authorize</div>
+                            <div class="stat-item"><i class="fas fa-history text-success me-2"></i>View Logs</div>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-center" style="flex-wrap: wrap;">
+                            <a href="{{ url_for('auth.ea_login') }}" class="btn btn-primary py-2 fw-bold" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login as Administrator
+                            </a>
+                            <a href="{{ url_for('auth.ea_signup') }}" class="btn btn-outline-primary py-2 fw-bold" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-user-plus me-2"></i>Create Admin Account
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Faculty Slide -->
+                    <div class="auth-slide p-5">
+                        <div class="text-center mb-5 pt-4">
+                            <div class="icon-circle dark mx-auto mb-4" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <h2 class="fw-bold text-white mb-3">Authorized Faculty</h2>
+                            <p class="lead text-light opacity-50 px-5">Access secured examination papers, decrypt questions, and download distribution material.</p>
+                        </div>
+
+                        <div class="stats-grid mb-4">
+                            <div class="stat-item"><i class="fas fa-eye me-2" style="color: #00ffaa;"></i>View Authorized Exams</div>
+                            <div class="stat-item"><i class="fas fa-unlock-keyhole me-2" style="color: #00f2fe;"></i>Decrypt Papers</div>
+                            <div class="stat-item"><i class="fas fa-download me-2" style="color: #00ffaa;"></i>Secure Download</div>
+                            <div class="stat-item"><i class="fas fa-shield-halved me-2" style="color: #00f2fe;"></i>Full System Audit</div>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-center" style="flex-wrap: wrap;">
+                            <a href="{{ url_for('auth.aef_login') }}" class="btn btn-faculty py-2 fw-bold" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Faculty Portal
+                            </a>
+                            <a href="{{ url_for('auth.aef_signup') }}" class="btn btn-outline-primary py-2 fw-bold" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-user-plus me-2"></i>Faculty Registration
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How It Works Section: Resend-Inspired Timeline -->
+    <div class="row mt-5 pt-5 pb-5">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h2 class="fw-extrabold display-5 mb-3" style="color: var(--text-main);">How it works</h2>
+                <p class="subtitle-text">Follow these steps to secure your examination process</p>
+            </div>
+
+            <div class="timeline-container">
+                <!-- Step 1 -->
+                <div class="timeline-step" id="step-1">
+                    <div class="timeline-indicator">
+                        <div class="step-circle active"></div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="step-card">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="step-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0 ms-3">1. Generate RSA Key Pair <span class="badge ms-2" style="background: rgba(0, 255, 170, 0.1); color: #00ffaa; font-size: 0.7rem; border: 1px solid rgba(0, 255, 170, 0.2);">SECURE</span></h4>
+                            </div>
+                            <p class="text-light opacity-75 mb-4">The Administrator initializes the system by generating strong 2048-bit RSA key pairs. The public key is used for encryption, while the private key remains secure for faculty decryption.</p>
+                            
+                            <div class="code-area mb-3">
+                                <div class="code-header">
+                                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                                    <span class="ms-2 small opacity-50">RSA-2048 GENERATION</span>
+                                </div>
+                                <pre><code>Generating Keys...
+<span style="color: #00ffaa;">[SUCCESS]</span> Public key: data/keys/pub_exam.pem
+<span style="color: #00ffaa;">[SUCCESS]</span> Private key: data/keys/priv_exam.pem</code></pre>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('auth.ea_login') }}" class="btn btn-sm btn-outline-light rounded-pill px-3" style="font-size: 0.75rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
+                                    <i class="fas fa-external-link-alt me-1" style="font-size: 0.65rem;"></i> Manage Keys
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="timeline-step" id="step-2">
+                    <div class="timeline-indicator">
+                        <div class="step-circle"></div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="step-card">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="step-icon">
+                                    <i class="fas fa-file-shield" style="font-size: 1rem;"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 ms-3">2. Encrypt Question Papers</h5>
+                            </div>
+                            <p class="text-light opacity-75 mb-3 small">Admins upload question papers which are instantly encrypted using the recipient's public key. Once encrypted, the raw content is never stored on disk.</p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('auth.ea_login') }}" class="btn btn-sm btn-outline-light rounded-pill px-3" style="font-size: 0.75rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
+                                    <i class="fas fa-plus-circle me-1" style="font-size: 0.65rem;"></i> Create Paper
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="timeline-step" id="step-3">
+                    <div class="timeline-indicator">
+                        <div class="step-circle"></div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="step-card">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="step-icon">
+                                    <i class="fas fa-id-card-clip" style="font-size: 1rem;"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 ms-3">3. Authorize Faculty Members</h5>
+                            </div>
+                            <p class="text-light opacity-75 mb-3 small">Access is governed by strict authorization. Admins must explicitly link faculty accounts to specific examination papers.</p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('auth.ea_login') }}" class="btn btn-sm btn-outline-light rounded-pill px-3" style="font-size: 0.75rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
+                                    <i class="fas fa-user-check me-1" style="font-size: 0.65rem;"></i> Authorize Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="timeline-step" id="step-4">
+                    <div class="timeline-indicator">
+                        <div class="step-circle last"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="step-card">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="step-icon">
+                                    <i class="fas fa-unlock-keyhole" style="font-size: 1rem;"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 ms-3">4. Decrypt & Access Paper</h5>
+                            </div>
+                            <p class="text-light opacity-75 mb-3 small">Authorized faculty use the secure private key to decrypt the paper in real-time. Every access is logged for audit transparency.</p>
+                            
+                            <div class="terminal-area p-2 rounded-3 mb-3" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="small monospace terminal-text" style="color: #00ffaa; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">
+                                    $ decrypt paper "DSA_Midterm.pdf"<br>
+                                    <span class="opacity-50">Validating Fingerprint... OK</span>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('auth.aef_login') }}" class="btn btn-sm btn-success rounded-pill px-3" style="font-size: 0.75rem; background: #00ffaa; border: none; color: #000; font-weight: 600;">
+                                <i class="fas fa-door-open me-1" style="font-size: 0.65rem;"></i> Start Using Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hero-title {
+            background: linear-gradient(to bottom, var(--text-main) 60%, rgba(var(--text-main-rgb), 0.8));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1.5px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        [data-theme="light"] .hero-title {
+            text-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .auth-card-wrapper {
+            width: 1000px;
+            height: 600px;
+            background: var(--bg-card);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] .auth-card-wrapper {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .mode-toggle-icon {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            padding: 0 15px;
+            height: 44px;
+            background: var(--theme-toggle-bg);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            color: var(--text-main);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--glass-border);
+        }
+
+        .toggle-tooltip {
+            margin-left: 0;
+            width: 0;
+            overflow: hidden;
+            opacity: 0;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mode-toggle-icon:hover {
+            background: rgba(0, 255, 170, 0.1);
+            border-color: #00ffaa;
+            color: #00ffaa;
+            padding: 0 20px;
+        }
+
+        .mode-toggle-icon:hover .toggle-tooltip {
+            margin-left: 10px;
+            width: 110px;
+            opacity: 1;
+        }
+
+        .auth-slider {
+            display: flex;
+            width: 2000px; /* 1000 * 2 */
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-slide {
+            width: 1000px;
+            height: 100%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(var(--text-main-rgb), 0.03);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-faculty {
+            background: linear-gradient(135deg, #4361EE 0%, #3A0CA3 100%);
+            border: none;
+            color: #fff;
+            padding: 12px 28px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(58, 12, 163, 0.4);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-faculty:hover {
+            background: linear-gradient(135deg, #4361EE 0%, #3A0CA3 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 15px rgba(58, 12, 163, 0.4);
+            transform: none;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 60px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .timeline-step {
+            display: flex;
+            margin-bottom: 0;
+            position: relative;
+        }
+
+        .timeline-indicator {
+            position: absolute;
+            left: -60px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30px;
+        }
+
+        .step-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1.5px solid var(--text-muted);
+            z-index: 2;
+            margin-top: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .step-circle.active {
+            background: #00ffaa;
+            border-color: #00ffaa;
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.6);
+            transform: scale(1.2);
+        }
+
+        .step-line {
+            width: 1px;
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 4px 0;
+            position: relative;
+        }
+
+        .step-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(to bottom, #00ffaa, transparent);
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.4);
+            transition: height 0.4s ease-out;
+        }
+
+        .timeline-step.active .step-line::after {
+            height: 100%;
+        }
+
+        .timeline-step.active .step-circle {
+            background: #00ffaa;
+            border-color: #00ffaa;
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.6);
+            transform: scale(1.3);
+        }
+
+        .timeline-content {
+            flex-grow: 1;
+            padding-bottom: 40px;
+            width: 100%;
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 24px 30px;
+            transition: all 0.35s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .step-card {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.08) 0%, rgba(72, 140, 255, 0.05) 100%);
+            border: 1.5px solid rgba(67, 97, 238, 0.15);
+            box-shadow: 0 8px 24px rgba(67, 97, 238, 0.1), inset 0 1px 0px rgba(255, 255, 255, 0.5);
+        }
+
+        [data-theme="light"] .step-card h4,
+        [data-theme="light"] .step-card h5 {
+            color: #1e3a8a !important;
+        }
+
+        [data-theme="light"] .step-card p {
+            color: #475569 !important;
+        }
+
+        [data-theme="light"] .step-icon {
+            background: rgba(67, 97, 238, 0.15);
+            color: #3b82f6;
+        }
+
+        [data-theme="light"] .code-area {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%);
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+
+        [data-theme="light"] .code-header {
+            background: rgba(67, 97, 238, 0.08);
+            border-bottom: 1px solid rgba(67, 97, 238, 0.15);
+        }
+
+        [data-theme="light"] .code-header .dot {
+            background: rgba(67, 97, 238, 0.3);
+        }
+
+        [data-theme="light"] .code-area pre {
+            color: #1e40af;
+        }
+
+        [data-theme="light"] .terminal-area {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%) !important;
+            border: 1px solid rgba(67, 97, 238, 0.2) !important;
+        }
+
+        [data-theme="light"] .step-circle {
+            background: transparent;
+            border: 1.5px solid rgba(67, 97, 238, 0.4);
+        }
+
+        [data-theme="light"] .step-circle.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        [data-theme="light"] .step-line {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        [data-theme="light"] .step-line::after {
+            background: linear-gradient(to bottom, #3b82f6, transparent);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        [data-theme="light"] .btn-outline-light {
+            color: #3b82f6;
+            border-color: rgba(67, 97, 238, 0.3);
+            background: rgba(67, 97, 238, 0.08);
+        }
+
+        [data-theme="light"] .btn-outline-light:hover {
+            color: #3b82f6;
+            border-color: rgba(67, 97, 238, 0.5);
+            background: rgba(67, 97, 238, 0.15);
+        }
+
+        [data-theme="light"] .subtitle-text {
+            color: #64748b !important;
+        }
+
+        [data-theme="light"] .step-circle.active {
+            background: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4) !important;
+        }
+
+        [data-theme="light"] .step-line::after {
+            background: linear-gradient(to bottom, #3b82f6, transparent) !important;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        [data-theme="light"] .terminal-text {
+            color: #3b82f6 !important;
+        }
+
+        [data-theme="light"] .step-circle,
+        [data-theme="light"] .step-circle.active {
+            background: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4) !important;
+        }
+
+        [data-theme="light"] .badge {
+            background: rgba(59, 130, 246, 0.1) !important;
+            color: #3b82f6 !important;
+            border-color: rgba(59, 130, 246, 0.3) !important;
+        }
+
+        [data-theme="light"] .step-icon {
+            background: rgba(59, 130, 246, 0.15) !important;
+            color: #3b82f6 !important;
+        }
+
+        [data-theme="light"] .btn-success {
+            background: #3b82f6 !important;
+            border: none !important;
+            color: #fff !important;
+        }
+
+        [data-theme="light"] [style*="color: #00ffaa"],
+        [data-theme="light"] span[style*="color: #00ffaa"] {
+            color: #3b82f6 !important;
+        }
+
+        [data-theme="light"] [style*="background: rgba(0, 255, 170"] {
+            background: rgba(59, 130, 246, 0.1) !important;
+        }
+
+        [data-theme="light"] [style*="color: #00ffaa"] {
+            color: #3b82f6 !important;
+        }
+
+        [data-theme="light"] [style*="border: 1px solid rgba(0, 255, 170"] {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+        }
+
+        [data-theme="light"] [style*="background: rgba(0, 255, 170, 0.1)"] {
+            background: rgba(59, 130, 246, 0.1) !important;
+        }
+
+        [data-theme="light"] [style*="background: #00ffaa"] {
+            background: #3b82f6 !important;
+            color: #fff !important;
+        }
+
+        [data-theme="light"] [style*="box-shadow: 0 0 15px rgba(0, 255, 170"] {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4) !important;
+        }
+
+        .timeline-step:hover .step-card {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        [data-theme="light"] .timeline-step:hover .step-card {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.15) 0%, rgba(72, 140, 255, 0.1) 100%);
+            border-color: rgba(67, 97, 238, 0.3);
+            box-shadow: 0 12px 32px rgba(67, 97, 238, 0.15), inset 0 1px 0px rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .timeline-step:hover .step-circle {
+            border-color: #00ffaa;
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(0, 255, 170, 0.08);
+            color: #00ffaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .code-area {
+            background: #0c0c0c;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .code-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            margin-right: 5px;
+        }
+
+        .code-area pre {
+            margin: 0;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .monospace {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ================================
+           MOBILE RESPONSIVENESS
+           ================================ */
+
+        /* Tablet (max 1100px) */
+        @media (max-width: 1100px) {
+            .auth-card-wrapper {
+                width: 95vw;
+                max-width: 700px;
+                height: auto;
+                min-height: 520px;
+            }
+            .auth-slider {
+                width: calc(2 * 95vw);
+                max-width: 1400px;
+            }
+            .auth-slide {
+                width: 50%;
+                padding: 2rem !important;
+            }
+        }
+
+        /* Mobile (max 768px) */
+        @media (max-width: 768px) {
+            .auth-card-wrapper {
+                width: 94vw;
+                height: auto;
+                min-height: 480px;
+                border-radius: 20px;
+            }
+            .auth-slider {
+                width: 188vw; /* 2 × 94vw */
+            }
+            .auth-slide {
+                width: 94vw;
+                padding: 1.5rem !important;
+                justify-content: flex-start;
+                padding-top: 3.5rem !important;
+            }
+            .auth-slide .icon-circle {
+                width: 72px !important;
+                height: 72px !important;
+                font-size: 1.8rem !important;
+            }
+            .auth-slide h2 {
+                font-size: 1.3rem;
+            }
+            .auth-slide p.lead {
+                font-size: 0.85rem;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            .stats-grid {
+                gap: 8px;
+            }
+            .stat-item {
+                font-size: 0.7rem;
+                padding: 6px 10px;
+            }
+            .mode-toggle-icon {
+                top: 14px;
+                right: 14px;
+                height: 36px;
+                padding: 0 12px;
+            }
+            .toggle-tooltip {
+                display: none; /* hide label text on mobile, icon is enough */
+            }
+
+            /* Timeline */
+            .timeline-container {
+                padding-left: 36px;
+                max-width: 100%;
+            }
+            .timeline-indicator {
+                left: -36px;
+                width: 20px;
+            }
+            .step-card {
+                padding: 16px 18px;
+            }
+            .step-icon {
+                width: 26px;
+                height: 26px;
+                font-size: 0.75rem;
+            }
+            .step-card h4, .step-card h5 {
+                font-size: 0.95rem;
+            }
+            .step-card p {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Small Mobile (max 480px) */
+        @media (max-width: 480px) {
+            .auth-card-wrapper {
+                width: 96vw;
+                border-radius: 16px;
+            }
+            .auth-slider { width: 192vw; }
+            .auth-slide {
+                width: 96vw;
+                padding: 1rem !important;
+                padding-top: 3rem !important;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+            .auth-slide h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+            .auth-slide .icon-circle {
+                width: 58px !important;
+                height: 58px !important;
+                font-size: 1.4rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const steps = document.querySelectorAll('.timeline-step');
+            
+            // Auth Mode Switching
+            let currentMode = 'ea';
+            window.toggleAuthMode = function() {
+                const slider = document.getElementById('auth-slider');
+                const icon = document.getElementById('switcher-icon');
+                const text = document.getElementById('toggle-text');
+                // Use dynamic card width so it works on all screen sizes
+                const cardWidth = document.querySelector('.auth-card-wrapper').offsetWidth;
+                
+                if (currentMode === 'ea') {
+                    slider.style.transform = `translateX(-${cardWidth}px)`;
+                    icon.className = 'fas fa-user-shield';
+                    text.textContent = 'Admin Portal';
+                    currentMode = 'aef';
+                } else {
+                    slider.style.transform = 'translateX(0)';
+                    icon.className = 'fas fa-chalkboard-teacher';
+                    text.textContent = 'Faculty Portal';
+                    currentMode = 'ea';
+                }
+            };
+
+            // Timeline Scroll Logic
+            steps.forEach((step, index) => {
+                step.addEventListener('mouseenter', () => {
+                    // Activate current and all previous steps
+                    steps.forEach((s, idx) => {
+                        if (idx <= index) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // Optional: Reset when leaving the whole container
+            const timelineContainer = document.querySelector('.timeline-container');
+            if (timelineContainer) {
+                timelineContainer.addEventListener('mouseleave', () => {
+                    steps.forEach(s => s.classList.remove('active'));
+                    steps[0].classList.add('active');
+                });
+            }
+            
+            // Initial state
+            if (steps.length > 0) steps[0].classList.add('active');
+        });
+    </script>
+    {% endblock %}

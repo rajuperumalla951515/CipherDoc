@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Paper - CipherDoc{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <div class="sidebar-toggle me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <a class="navbar-brand fw-extrabold" href="{{ url_for('ea.dashboard') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="navbar-logo">
+                CipherDoc Admin
+            </a>
+        </div>
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+            <button class="theme-toggle-btn me-2" onclick="toggleTheme()" title="Toggle Theme">
+                <i class="fas fa-sun theme-icon"></i>
+            </button>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                <i class="fas fa-user-circle me-1 text-primary"></i>{{ session.user_name }}
+            </a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-2 px-0">
+            <div class="sidebar py-4">
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{{ url_for('ea.dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="{{ url_for('ea.create_paper') }}">
+                        <i class="fas fa-file-alt"></i>Create Paper
+                    </a>
+                    <a class="nav-link active" href="{{ url_for('ea.manage_papers') }}">
+                        <i class="fas fa-folder-open"></i>Manage Papers
+                    </a>
+                    <a class="nav-link" href="{{ url_for('ea.manage_keys') }}">
+                        <i class="fas fa-key"></i>RSA Keys
+                    </a>
+                    <a class="nav-link" href="{{ url_for('ea.authorize_faculty') }}">
+                        <i class="fas fa-user-check"></i>Authorize Faculty
+                    </a>
+                    <a class="nav-link" href="{{ url_for('ea.access_logs') }}">
+                        <i class="fas fa-history"></i>Access Logs
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="col-lg-10 py-4 px-4">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-circle primary me-3">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0" style="color: var(--primary-light);">Edit Question Paper</h2>
+                    <p class="text-muted mb-0">Update and re-encrypt: {{ paper.exam_name }}</p>
+                </div>
+            </div>
+            
+            <div class="card p-4">
+                <form method="POST" action="{{ url_for('ea.edit_paper', paper_id=paper.id) }}">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-bookmark me-2 text-primary"></i>Exam Name <span class="text-primary">*</span>
+                            </label>
+                            <input type="text" name="exam_name" class="form-control" required value="{{ paper.exam_name }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-book me-2 text-primary"></i>Subject <span class="text-primary">*</span>
+                            </label>
+                            <input type="text" name="subject" class="form-control" required value="{{ paper.subject }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-calendar me-2 text-primary"></i>Exam Date <span class="text-primary">*</span>
+                            </label>
+                            <input type="date" name="exam_date" class="form-control" required value="{{ paper.exam_date }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-clock me-2 text-primary"></i>Duration (minutes) <span class="text-primary">*</span>
+                            </label>
+                            <input type="number" name="exam_duration" class="form-control" required min="30" max="360" value="{{ paper.exam_duration }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-star me-2 text-primary"></i>Total Marks <span class="text-primary">*</span>
+                            </label>
+                            <input type="number" name="total_marks" class="form-control" required min="10" max="200" value="{{ paper.total_marks }}">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>Instructions for Students <span class="text-primary">*</span>
+                            </label>
+                            <textarea id="instructions-editor" name="instructions" class="form-control" rows="4" placeholder="Enter updated instructions...">{{ paper.get('decrypted_instructions', 'Previously encrypted - enter new instructions') }}</textarea>
+                            <small class="text-muted">You can format instructions with bold, italic, underline, bullet list, and numbered list. The full instructions will be re-encrypted.</small>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-question-circle me-2 text-primary"></i>Question Paper Content <span class="text-primary">*</span>
+                            </label>
+                            <textarea id="questions-editor" name="questions" class="form-control" rows="12" placeholder="Enter updated questions...">{{ paper.get('decrypted_questions', 'Previously encrypted - enter new questions') }}</textarea>
+                            <small class="text-muted">You can format questions with bold, italic, underline, bullet list, and numbered list. The full questions will be re-encrypted with the active RSA key.</small>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="alert alert-warning py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle primary me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 fw-semibold">Re-encryption Notice</p>
+                                        <p class="mb-0 small text-muted">The updated content will be re-encrypted using the currently active RSA key.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update & Re-encrypt Paper
+                            </button>
+                            <a href="{{ url_for('ea.manage_papers') }}" class="btn btn-outline-primary ms-2">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let instructionsEditor;
+        let questionsEditor;
+
+        ClassicEditor.create(document.querySelector('#instructions-editor'), {
+            toolbar: ['undo', 'redo', '|', 'bold', 'italic', 'underline', '|', 'bulletedList', 'numberedList']
+        }).then(editor => {
+            instructionsEditor = editor;
+        }).catch(error => {
+            console.error('Instructions editor initialization failed:', error);
+        });
+
+        ClassicEditor.create(document.querySelector('#questions-editor'), {
+            toolbar: ['undo', 'redo', '|', 'bold', 'italic', 'underline', '|', 'bulletedList', 'numberedList']
+        }).then(editor => {
+            questionsEditor = editor;
+        }).catch(error => {
+            console.error('Questions editor initialization failed:', error);
+        });
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                if (instructionsEditor) {
+                    document.querySelector('#instructions-editor').value = instructionsEditor.getData();
+                }
+                if (questionsEditor) {
+                    document.querySelector('#questions-editor').value = questionsEditor.getData();
+                }
+
+                const toPlainText = (html) => {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html || '';
+                    return temp.textContent.replace(/\u00a0/g, ' ').trim();
+                };
+
+                const instructionsText = toPlainText(document.querySelector('#instructions-editor').value);
+                const questionsText = toPlainText(document.querySelector('#questions-editor').value);
+
+                if (!instructionsText || !questionsText) {
+                    event.preventDefault();
+                    alert('Please enter both Instructions and Questions before updating the paper.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
