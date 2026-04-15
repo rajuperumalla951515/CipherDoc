@@ -1120,10 +1120,11 @@
         // Theme Management
         const themeToggle = {
             init() {
-                const savedTheme = localStorage.getItem('theme') || 'dark';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                this.updateIcons(savedTheme);
-                this.updateLogo(savedTheme);
+                const initialTheme = 'light';
+                document.documentElement.setAttribute('data-theme', initialTheme);
+                localStorage.setItem('theme', initialTheme);
+                this.updateIcons(initialTheme);
+                this.updateLogo(initialTheme);
             },
             toggle() {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
