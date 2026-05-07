@@ -17,6 +17,14 @@ is_vercel = os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_ENV') is n
 if is_vercel:
     storage_root = tempfile.gettempdir()
     data_path = os.path.join(storage_root, 'cipherdoc_exam_db.json')
+    
+    # If the file doesn't exist in /tmp yet, copy it from the static data folder
+    if not os.path.exists(data_path):
+        import shutil
+        source_db = os.path.join(app_root, 'data', 'exam_db.json')
+        if os.path.exists(source_db):
+            shutil.copy2(source_db, data_path)
+            
     uploads_path = os.path.join(storage_root, 'cipherdoc_uploads')
     keys_path = os.path.join(storage_root, 'cipherdoc_keys')
 else:
