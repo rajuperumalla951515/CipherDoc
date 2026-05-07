@@ -1,0 +1,20 @@
+{
+    "access_logs": {
+        "111": {
+            "id": "35659ccb-7e7f-43f8-a6c4-77da3086d9d9",
+            "user_id": "b37def94-8061-45cf-9549-323a72fa86d9",
+            "user_type": "EA",
+            "action": "VIEW_PAPER",
+            "details": "Viewed paper: JEE-Mains",
+            "timestamp": "2026-04-15 15:30:10"
+        },
+        "112": {
+            "id": "5620f098-c920-438e-9f69-725fff78aa56",
+            "user_id": "b37def94-8061-45cf-9549-323a72fa86d9",
+            "user_type": "EA",
+            "action": "LOGIN",
+            "details": "EA logged in: rajuperumallar@gmail.com",
+            "timestamp": "2026-04-15 15:31:09"
+        }
+    }
+}
