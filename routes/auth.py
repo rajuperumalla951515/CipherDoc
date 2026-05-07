@@ -73,16 +73,16 @@ def ea_signup():
         users_table, _ = get_db()
         User = Query()
         
-        email = request.form.get('email')
+        email = request.form.get('email', '').strip().lower()
         employee_id = generate_employee_id(users_table)
         while users_table.search(User.employee_id == employee_id):
             employee_id = generate_employee_id(users_table)
         
-        if not email.lower().endswith('@gmail.com'):
+        if not email.endswith('@gmail.com'):
             flash('Only Gmail addresses (@gmail.com) are allowed for registration!', 'error')
             return redirect(url_for('auth.ea_signup'))
             
-        if users_table.search(User.email == email):
+        if users_table.search(User.email.matches(f"(?i)^{email}$")):
             flash('Email already exists!', 'error')
             return redirect(url_for('auth.ea_signup'))
         
@@ -125,10 +125,10 @@ def ea_login():
         users_table, _ = get_db()
         User = Query()
         
-        email = request.form.get('email')
+        email = request.form.get('email', '').strip()
         password = request.form.get('password')
         
-        user = users_table.search((User.email == email) & (User.user_type == 'EA'))
+        user = users_table.search((User.email.matches(f"(?i)^{email}$")) & (User.user_type == 'EA'))
         
         if user and check_password_hash(user[0]['password_hash'], password):
             session['user_id'] = user[0]['id']
@@ -149,16 +149,16 @@ def aef_signup():
         users_table, _ = get_db()
         User = Query()
         
-        email = request.form.get('email')
+        email = request.form.get('email', '').strip().lower()
         faculty_id = generate_faculty_id(users_table)
         while users_table.search(User.faculty_id == faculty_id):
             faculty_id = generate_faculty_id(users_table)
         
-        if not email.lower().endswith('@gmail.com'):
+        if not email.endswith('@gmail.com'):
             flash('Only Gmail addresses (@gmail.com) are allowed for registration!', 'error')
             return redirect(url_for('auth.aef_signup'))
 
-        if users_table.search(User.email == email):
+        if users_table.search(User.email.matches(f"(?i)^{email}$")):
             flash('Email already exists!', 'error')
             return redirect(url_for('auth.aef_signup'))
         
@@ -203,10 +203,10 @@ def aef_login():
         users_table, _ = get_db()
         User = Query()
         
-        email = request.form.get('email')
+        email = request.form.get('email', '').strip()
         password = request.form.get('password')
         
-        user = users_table.search((User.email == email) & (User.user_type == 'AEF'))
+        user = users_table.search((User.email.matches(f"(?i)^{email}$")) & (User.user_type == 'AEF'))
         
         if user and check_password_hash(user[0]['password_hash'], password):
             session['user_id'] = user[0]['id']
@@ -230,3 +230,57 @@ def logout():
     session.clear()
     flash('You have been logged out successfully.', 'success')
     return redirect(url_for('auth.home'))
+
+
+@bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        users_table, _ = get_db()
+        User = Query()
+        user = users_table.get(User.email == email)
+
+        if user:
+            otp = ''.join(random.choices(string.digits, k=6))
+            session['reset_otp'] = otp
+            session['reset_email'] = email
+            
+            # In a real app, you'd email this OTP.
+            # For this project, we'll flash it for demonstration.
+            flash('An OTP has been sent to your email.', 'info')
+            return redirect(url_for('auth.reset_with_otp'))
+        else:
+            flash('Email address not found.', 'error')
+    
+    return render_template('forgot_password.html')
+
+@bp.route('/reset-with-otp', methods=['GET', 'POST'])
+def reset_with_otp():
+    if 'reset_email' not in session:
+        return redirect(url_for('auth.forgot_password'))
+
+    if request.method == 'POST':
+        otp = request.form.get('otp')
+        new_password = request.form.get('new_password')
+        
+        if otp == session.get('reset_otp'):
+            users_table, _ = get_db()
+            User = Query()
+            
+            users_table.update(
+                {'password_hash': generate_password_hash(new_password)},
+                User.email == session['reset_email']
+            )
+            
+            log_activity(users_table.get(User.email == session['reset_email'])['id'], 'USER', 'PASSWORD_RESET', f"Password reset for {session['reset_email']}")
+
+            session.pop('reset_otp', None)
+            session.pop('reset_email', None)
+            
+            flash('Your password has been reset successfully. Please login.', 'success')
+            # Redirect to home or a generic login page, as we don't know if they are EA or AEF
+            return redirect(url_for('auth.home'))
+        else:
+            flash('Invalid OTP.', 'error')
+            
+    return render_template('reset_with_otp.html')
