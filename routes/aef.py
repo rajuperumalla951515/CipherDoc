@@ -1,10 +1,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, make_response
 from functools import wraps
+from tinydb import Query 
 from datetime import datetime
 import uuid
 from encryption import decrypt_text
 
 bp = Blueprint('aef', __name__, url_prefix='/aef')
+
+def get_db():
+    from app import users_table, papers_table, keys_table, authorizations_table, logs_table
+    return users_table, papers_table, keys_table, authorizations_table, logs_table
+
 
 def aef_required(f):
     @wraps(f)
@@ -17,32 +23,35 @@ def aef_required(f):
 
 
 def log_activity(user_id, action, details=""):
-    from app import supabase
-    supabase.table('access_logs').insert({
+    _, _, _, _, logs_table = get_db()
+    logs_table.insert({
         'id': str(uuid.uuid4()),
         'user_id': user_id,
         'user_type': 'AEF',
         'action': action,
         'details': details,
         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    }).execute()
+    })
 
 
 @bp.route('/dashboard')
 @aef_required
 def dashboard():
-    from app import supabase
+    users_table, papers_table, _, authorizations_table, _ = get_db()
+    User = Query()
+    Auth = Query()
     
-    user = supabase.table('users').select('*').eq('id', session['user_id']).execute().data
+    user = users_table.search(User.id == session['user_id'])
     is_authorized = user[0]['is_authorized'] if user else False
     
     authorized_papers = []
     if is_authorized:
-        auth_records = supabase.table('authorizations').select('paper_id').eq('faculty_id', session['user_id']).execute().data
+        auth_records = authorizations_table.search(Auth.faculty_id == session['user_id'])
         paper_ids = [a['paper_id'] for a in auth_records]
         
+        Paper = Query()
         for paper_id in paper_ids:
-            paper = supabase.table('papers').select('*').eq('id', paper_id).execute().data
+            paper = papers_table.search(Paper.id == paper_id)
             if paper:
                 authorized_papers.append(paper[0])
     
@@ -58,19 +67,22 @@ def dashboard():
 @bp.route('/view-exams')
 @aef_required
 def view_exams():
-    from app import supabase
+    users_table, papers_table, _, authorizations_table, _ = get_db()
+    User = Query()
+    Auth = Query()
+    Paper = Query()
     
-    user = supabase.table('users').select('*').eq('id', session['user_id']).execute().data
-    if not user or not user[0].get('is_authorized'):
+    user = users_table.search(User.id == session['user_id'])
+    if not user or not user[0]['is_authorized']:
         flash('You are not authorized to view exam papers. Please contact an administrator.', 'error')
         return redirect(url_for('aef.dashboard'))
     
-    auth_records = supabase.table('authorizations').select('paper_id').eq('faculty_id', session['user_id']).execute().data
+    auth_records = authorizations_table.search(Auth.faculty_id == session['user_id'])
     paper_ids = [a['paper_id'] for a in auth_records]
     
     authorized_papers = []
     for paper_id in paper_ids:
-        paper = supabase.table('papers').select('*').eq('id', paper_id).execute().data
+        paper = papers_table.search(Paper.id == paper_id)
         if paper:
             authorized_papers.append(paper[0])
     
@@ -81,33 +93,37 @@ def view_exams():
 @bp.route('/decrypt-paper/<paper_id>', methods=['GET', 'POST'])
 @aef_required
 def decrypt_paper(paper_id):
-    from app import supabase
+    users_table, papers_table, keys_table, authorizations_table, _ = get_db()
+    User = Query()
+    Auth = Query()
+    Paper = Query()
+    Key = Query()
     
-    user = supabase.table('users').select('*').eq('id', session['user_id']).execute().data
-    if not user or not user[0].get('is_authorized'):
+    user = users_table.search(User.id == session['user_id'])
+    if not user or not user[0]['is_authorized']:
         flash('You are not authorized to decrypt exam papers.', 'error')
         return redirect(url_for('aef.dashboard'))
     
-    auth = supabase.table('authorizations').select('*').eq('faculty_id', session['user_id']).eq('paper_id', paper_id).execute().data
+    auth = authorizations_table.search((Auth.faculty_id == session['user_id']) & (Auth.paper_id == paper_id))
     if not auth:
         flash('You are not authorized to access this exam paper.', 'error')
         return redirect(url_for('aef.view_exams'))
     
-    paper_data = supabase.table('papers').select('*').eq('id', paper_id).execute().data
-    if not paper_data:
+    paper = papers_table.search(Paper.id == paper_id)
+    if not paper:
         flash('Exam paper not found!', 'error')
         return redirect(url_for('aef.view_exams'))
     
-    paper = paper_data[0]
+    paper = paper[0]
     decrypted_data = None
     
     if request.method == 'POST':
-        key_data = supabase.table('keys').select('*').eq('id', paper['key_id']).execute().data
-        if not key_data:
+        key = keys_table.search(Key.id == paper['key_id'])
+        if not key:
             flash('Encryption key not found! Contact administrator.', 'error')
             return redirect(url_for('aef.view_exams'))
         
-        private_key = key_data[0]['private_key']
+        private_key = key[0]['private_key']
         
         try:
             decrypted_questions = decrypt_text(
@@ -146,33 +162,37 @@ def decrypt_paper(paper_id):
 @bp.route('/download-paper/<paper_id>')
 @aef_required
 def download_paper(paper_id):
-    from app import supabase
+    users_table, papers_table, keys_table, authorizations_table, _ = get_db()
+    User = Query()
+    Auth = Query()
+    Paper = Query()
+    Key = Query()
     
-    user = supabase.table('users').select('*').eq('id', session['user_id']).execute().data
-    if not user or not user[0].get('is_authorized'):
+    user = users_table.search(User.id == session['user_id'])
+    if not user or not user[0]['is_authorized']:
         flash('You are not authorized to download exam papers.', 'error')
         return redirect(url_for('aef.dashboard'))
     
-    auth = supabase.table('authorizations').select('*').eq('faculty_id', session['user_id']).eq('paper_id', paper_id).execute().data
+    auth = authorizations_table.search((Auth.faculty_id == session['user_id']) & (Auth.paper_id == paper_id))
     if not auth:
         flash('You are not authorized to access this exam paper.', 'error')
         return redirect(url_for('aef.view_exams'))
     
-    paper_data = supabase.table('papers').select('*').eq('id', paper_id).execute().data
-    if not paper_data:
+    paper = papers_table.search(Paper.id == paper_id)
+    if not paper:
         flash('Exam paper not found!', 'error')
         return redirect(url_for('aef.view_exams'))
     
-    paper = paper_data[0]
+    paper = paper[0]
     
     decrypted_data = session.get(f'decrypted_{paper_id}')
     if not decrypted_data:
-        key_data = supabase.table('keys').select('*').eq('id', paper['key_id']).execute().data
-        if not key_data:
+        key = keys_table.search(Key.id == paper['key_id'])
+        if not key:
             flash('Encryption key not found!', 'error')
             return redirect(url_for('aef.view_exams'))
         
-        private_key = key_data[0]['private_key']
+        private_key = key[0]['private_key']
         
         try:
             decrypted_questions = decrypt_text(
