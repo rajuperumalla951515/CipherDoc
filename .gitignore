@@ -14,3 +14,6 @@ uploads/
 # OS/editor files
 .DS_Store
 Thumbs.db
+
+# Secrets
+.env

@@ -1,9 +1,12 @@
 import os
 import logging
 import tempfile
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for, session
 from werkzeug.middleware.proxy_fix import ProxyFix
-from tinydb import TinyDB, Query
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -14,34 +17,21 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app_root = os.path.dirname(os.path.abspath(__file__))
 is_vercel = os.environ.get('VERCEL') == '1' or os.environ.get('VERCEL_ENV') is not None
 
+# Setup Supabase
+supabase_url = os.environ.get("SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(supabase_url, supabase_key)
+
 if is_vercel:
     storage_root = tempfile.gettempdir()
-    data_path = os.path.join(storage_root, 'cipherdoc_exam_db.json')
-    
-    # If the file doesn't exist in /tmp yet, copy it from the static data folder
-    if not os.path.exists(data_path):
-        import shutil
-        source_db = os.path.join(app_root, 'data', 'exam_db.json')
-        if os.path.exists(source_db):
-            shutil.copy2(source_db, data_path)
-            
     uploads_path = os.path.join(storage_root, 'cipherdoc_uploads')
     keys_path = os.path.join(storage_root, 'cipherdoc_keys')
 else:
-    data_path = os.path.join(app_root, 'data', 'exam_db.json')
     uploads_path = os.path.join(app_root, 'uploads')
     keys_path = os.path.join(app_root, 'keys')
 
-os.makedirs(os.path.dirname(data_path), exist_ok=True)
 os.makedirs(uploads_path, exist_ok=True)
 os.makedirs(keys_path, exist_ok=True)
-
-db = TinyDB(data_path)
-users_table = db.table('users')
-papers_table = db.table('papers')
-keys_table = db.table('keys')
-authorizations_table = db.table('authorizations')
-logs_table = db.table('access_logs')
 
 app.config['UPLOAD_FOLDER'] = uploads_path
 app.config['KEYS_FOLDER'] = keys_path
@@ -51,15 +41,13 @@ app.register_blueprint(auth.bp)
 app.register_blueprint(ea.bp)
 app.register_blueprint(aef.bp)
 
-from flask import session
 @app.context_processor
 def inject_user():
     user_id = session.get('user_id')
     if user_id:
-        User = Query()
-        user = users_table.search(User.id == user_id)
-        if user:
-            return dict(current_user=user[0])
+        response = supabase.table('users').select('*').eq('id', user_id).execute()
+        if response.data:
+            return dict(current_user=response.data[0])
     return dict(current_user=None)
 
 @app.route('/update-profile', methods=['POST'])
@@ -67,7 +55,6 @@ def update_profile():
     if 'user_id' not in session:
         return {"success": False, "message": "Unauthorized"}, 401
     
-    User = Query()
     user_id = session['user_id']
     user_type = session['user_type']
     
@@ -90,7 +77,7 @@ def update_profile():
             'experience_years': request.form.get('experience_years')
         })
     
-    users_table.update(update_data, User.id == user_id)
+    supabase.table('users').update(update_data).eq('id', user_id).execute()
     
     # Sync session
     session['user_name'] = update_data['full_name']
@@ -98,13 +85,9 @@ def update_profile():
     
     return {"success": True, "message": "Profile updated successfully"}
 
-from flask import redirect, url_for
-
 @app.route('/')
 def index():
     return redirect(url_for('auth.home'))
 
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
